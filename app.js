@@ -21,17 +21,36 @@ app.post('/upload', (req, res) => {
 app.post('/double-uploads/', (req, res) => {
     let fileName;
     let path;
+    let numOfFiles = 0;
 
-    const files = req.files.photo;
-    files.forEach(file => {
-        fileName = file.name;
-        path = __dirname + "/uploads/" + fileName;
-        file.mv(path, (err) => {
-            if(err) return res.status(400).json(err);
+    if (! req.files) {
+        return res.status(400).json({ UploadError: "No files uploaded"});
+    }else{
+        const files = req.files.photo;
+        files.forEach(file => {
+
+            if (file.size <= 0) {
+                return res.status(400).json({ UploadError: "File has no size" })
+            }
+
+            numOfFiles++; //Counts the number of files uploaded
+
+            fileName = Date.now() + "-" + file.name;
+            path = __dirname + "/uploads/" + fileName;
+            file.mv(path, (err) => {
+                if(err) return res.status(400).json(err);
+            })
+
+        });
+
+        res.status(200).json({
+            status: "Files Uploaded Successfully",
+            numberOfFiles: numOfFiles,
+            filesData: req.files.photo
         })
-    });
+    }
 
-    res.status(200).json(files)
+
 })
 
 
